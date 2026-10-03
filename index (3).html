@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morocco Weather – Live conditions and 7-day forecast</title>
+<meta name="description" content="Live weather and 7-day forecasts for major cities across Morocco.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f6;--surface:#fff;--surface2:#f5f8fb;--line:#dde4ec;--ink:#0f1c2e;--muted:#5d6b7e;
+  --accent:#1666d8;--accent-soft:#e3eefc;--hero1:#0f3b82;--hero2:#1d74e0;--bar:#f2a93b;
+  --shadow:0 1px 2px rgba(15,28,46,.05),0 8px 24px rgba(15,28,46,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b121c;--surface:#131d2b;--surface2:#182436;--line:#243247;--ink:#e8eef6;--muted:#93a3b8;
+  --accent:#5aa2ff;--accent-soft:#16304f;--hero1:#0d2c5e;--hero2:#14509f;--bar:#f2b04f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:hidden;max-width:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.topbar{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.topbar .in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;letter-spacing:-.01em}
+.brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--hero1),var(--hero2));display:grid;place-items:center;font-size:1.1rem}
+.brand small{display:block;font-weight:500;font-size:.72rem;color:var(--muted);letter-spacing:0}
+.spacer{flex:1}
+.updated{font-size:.8rem;color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:5px 14px;border-radius:7px;font-weight:600;font-size:.85rem;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:10px;font-weight:600;font-size:.85rem}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.layout{max-width:1280px;margin:0 auto;padding:16px 20px 8px;display:grid;grid-template-columns:270px minmax(0,1fr);gap:16px;align-items:start}
+#main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-width:0}
+#main>.hero,#main>.stats,#main>.state{grid-column:1/-1}
+#main .sec{margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.panel h2{font-size:.95rem;font-weight:700;padding:16px 20px 0}
+.cities{list-style:none;padding:8px}
+.cities button{width:100%;display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:8px;text-align:left;border:0;background:none;padding:7px 10px;border-radius:11px}
+.cities button:hover{background:var(--surface2)}
+.cities button[aria-current=true]{background:var(--accent-soft)}
+.cities .ic{font-size:1.5rem;text-align:center}
+.cities .nm{font-weight:600;font-size:.95rem}
+.cities .ds{font-size:.76rem;color:var(--muted)}
+.cities .tp{font-weight:700;font-size:1.1rem;text-align:right}
+.cities .hl{font-size:.72rem;color:var(--muted);font-weight:500;display:block}
+
+.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;border-radius:16px;padding:18px 24px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.hero h1{font-size:1.5rem;font-weight:800;letter-spacing:-.01em}
+.hero .date{opacity:.8;font-size:.88rem}
+.hero .temp{font-size:3.6rem;font-weight:800;line-height:1;letter-spacing:-.04em;margin:8px 0 4px}
+.hero .temp sup{font-size:1.6rem;font-weight:600;vertical-align:top;position:relative;top:.5rem;opacity:.85}
+.hero .cond{font-size:1.1rem;font-weight:600}
+.hero .sub{opacity:.85;font-size:.9rem}
+.hero .big{font-size:4.8rem;line-height:1}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.stat .l{font-size:.78rem;color:var(--muted);font-weight:500}
+.stat .v{font-size:1.15rem;font-weight:700;margin-top:2px}
+.stat .n{font-size:.76rem;color:var(--muted)}
+
+.sec{margin-top:16px;padding-bottom:12px}
+.hourly{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 16px 4px}
+.hr{text-align:center;padding:8px 4px;border-radius:12px;background:var(--surface2)}
+.hr.now{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.hr .t{font-size:.76rem;color:var(--muted)}
+.hr.now .t{color:inherit}
+.hr .i{font-size:1.4rem;margin:4px 0}
+.hr .d{font-weight:700}
+.hr .p{font-size:.7rem;color:var(--accent)}
+
+.days{list-style:none;padding:6px 20px 0}
+.day{display:grid;grid-template-columns:64px 34px 44px 1fr 44px 48px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.day:last-child{border-bottom:0}
+.day b{font-weight:600}
+.day .lo{color:var(--muted);text-align:right}
+.day .hi{font-weight:700}
+.day .rain{font-size:.76rem;color:var(--accent);text-align:right}
+.track{height:6px;background:var(--surface2);border-radius:6px;position:relative;border:1px solid var(--line)}
+.track i{position:absolute;top:-1px;bottom:-1px;border-radius:6px;background:linear-gradient(90deg,#4aa3ff,var(--bar))}
+
+.state{padding:60px 20px;text-align:center;color:var(--muted)}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 12px;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+.foot{max-width:1280px;margin:0 auto;padding:4px 20px 14px;font-size:.78rem;color:var(--muted)}
+.foot a{color:var(--accent)}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  #main{grid-template-columns:minmax(0,1fr)}
+  .cities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+}
+@media(max-width:560px){
+  .hero{padding:20px;grid-template-columns:1fr}
+  .hero .big{display:none}
+  .hero .temp{font-size:4rem}
+  .day{grid-template-columns:50px 28px 38px 1fr 38px 0}
+  .day .rain{display:none}
+}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="in">
+  <div class="brand"><span class="logo" aria-hidden="true">🌤️</span><span>Morocco Weather<small>Live conditions &amp; forecasts</small></span></div>
+  <div class="spacer"></div>
+  <span class="updated" id="updated" aria-live="polite"></span>
+  <div class="seg" role="group" aria-label="Temperature unit">
+    <button id="uC" aria-pressed="true">°C</button><button id="uF" aria-pressed="false">°F</button>
+  </div>
+  <button class="btn" id="refresh">Refresh</button>
+</div></header>
+
+<main class="layout">
+  <aside class="panel" aria-label="Cities">
+    <h2>Cities</h2>
+    <ul class="cities" id="cities"></ul>
+  </aside>
+  <section id="main" aria-live="polite"><noscript><div class="panel state">Please enable JavaScript to see the weather.</div></noscript><div class="state"><div class="spin"></div>Loading weather data…</div></section>
+</main>
+<p class="foot">Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>. Times shown in Morocco local time.</p>
+
+<script>
+const CITIES=[
+ {n:'Casablanca',la:33.5928,lo:-7.6164},{n:'Rabat',la:34.0209,lo:-6.8416},
+ {n:'Marrakech',la:31.6295,lo:-7.9811},{n:'Fes',la:34.0181,lo:-5.0078},
+ {n:'Tangier',la:35.7595,lo:-5.8340},{n:'Agadir',la:30.4278,lo:-9.5981},
+ {n:'Meknes',la:33.8935,lo:-5.5473},{n:'Oujda',la:34.6814,lo:-1.9086}
+];
+const TZ='Africa/Casablanca';
+const W={0:['☀️','Clear sky'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Fog'],48:['🌫️','Freezing fog'],
+51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌦️','Heavy drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],
+61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],
+71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['🌨️','Heavy snow'],77:['🌨️','Snow grains'],
+80:['🌦️','Light showers'],81:['🌧️','Showers'],82:['🌧️','Heavy showers'],85:['🌨️','Snow showers'],86:['🌨️','Snow showers'],
+95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm, hail'],99:['⛈️','Severe thunderstorm']};
+const wx=c=>W[c]||['🌡️','Unknown'];
+let unit='C',sel=0,ov=[],det={},stamp=null;
+const $=id=>document.getElementById(id);
+const T=c=>Math.round(unit==='C'?c:c*9/5+32);
+const compass=d=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];
+const uvLabel=u=>u<3?'Low':u<6?'Moderate':u<8?'High':u<11?'Very high':'Extreme';
+const api=(q)=>fetch('https://api.open-meteo.com/v1/forecast?'+q+'&timezone='+TZ).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+
+async function loadOverview(){
+  const d=await api('latitude='+CITIES.map(c=>c.la)+'&longitude='+CITIES.map(c=>c.lo)+'&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=1');
+  ov=Array.isArray(d)?d:[d];
+}
+async function loadDetail(i){
+  const c=CITIES[i];
+  det[i]=await api('latitude='+c.la+'&longitude='+c.lo+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&forecast_days=7');
+}
+function renderList(){
+  $('cities').innerHTML=CITIES.map((c,i)=>{
+    const o=ov[i];if(!o)return `<li><button data-i="${i}"><span class="ic">·</span><span class="nm">${c.n}</span><span></span></button></li>`;
+    const w=wx(o.current.weather_code);
+    return `<li><button data-i="${i}" ${i===sel?'aria-current="true"':''}><span class="ic" aria-hidden="true">${w[0]}</span><span><span class="nm">${c.n}</span><br><span class="ds">${w[1]}</span></span><span class="tp">${T(o.current.temperature_2m)}°<span class="hl">${T(o.daily.temperature_2m_max[0])}° / ${T(o.daily.temperature_2m_min[0])}°</span></span></button></li>`;
+  }).join('');
+}
+function renderMain(){
+  const d=det[sel],c=d.current,dy=d.daily,w=wx(c.weather_code),city=CITIES[sel];
+  const date=new Date(c.time).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  const start=Math.max(0,d.hourly.time.findIndex(t=>t.slice(0,13)>=c.time.slice(0,13)));
+  let hrs='';
+  for(let k=0;k<8;k++){
+    const j=start+k*3;if(j>=d.hourly.time.length)break;
+    const h=wx(d.hourly.weather_code[j]),p=d.hourly.precipitation_probability[j];
+    hrs+=`<div class="hr${k?'':' now'}"><div class="t">${k?d.hourly.time[j].slice(11,16):'Now'}</div><div class="i" aria-hidden="true">${h[0]}</div><div class="d">${T(d.hourly.temperature_2m[j])}°</div><div class="p">${p>=10?p+'%':'&nbsp;'}</div></div>`;
+  }
+  const mn=Math.min(...dy.temperature_2m_min),mx=Math.max(...dy.temperature_2m_max),span=(mx-mn)||1;
+  const days=dy.time.map((t,k)=>{
+    const wd=k?new Date(t+'T12:00').toLocaleDateString('en-GB',{weekday:'short'}):'Today';
+    const lo=dy.temperature_2m_min[k],hi=dy.temperature_2m_max[k];
+    return `<li class="day"><b>${wd}</b><span aria-hidden="true">${wx(dy.weather_code[k])[0]}</span><span class="lo">${T(lo)}°</span><div class="track"><i style="left:${(lo-mn)/span*100}%;right:${100-(hi-mn)/span*100}%"></i></div><span class="hi">${T(hi)}°</span><span class="rain">${dy.precipitation_probability_max[k]??0}%</span></li>`;
+  }).join('');
+  const uv=dy.uv_index_max[0];
+  $('main').innerHTML=`
+  <div class="hero"><div>
+    <h1>${city.n}, Morocco</h1><div class="date">${date}</div>
+    <div class="temp">${T(c.temperature_2m)}<sup>°${unit}</sup></div>
+    <div class="cond">${w[1]}</div>
+    <div class="sub">High ${T(dy.temperature_2m_max[0])}° · Low ${T(dy.temperature_2m_min[0])}° · Feels like ${T(c.apparent_temperature)}°</div>
+  </div><div class="big" aria-hidden="true">${w[0]}</div></div>
+  <div class="stats">
+    <div class="stat"><div class="l">Humidity</div><div class="v">${c.relative_humidity_2m}%</div></div>
+    <div class="stat"><div class="l">Wind</div><div class="v">${Math.round(c.wind_speed_10m)} km/h</div><div class="n">from ${compass(c.wind_direction_10m)}</div></div>
+    <div class="stat"><div class="l">Pressure</div><div class="v">${Math.round(c.surface_pressure)} hPa</div></div>
+    <div class="stat"><div class="l">UV index</div><div class="v">${Math.round(uv)}</div><div class="n">${uvLabel(uv)}</div></div>
+    <div class="stat"><div class="l">Sunrise</div><div class="v">${dy.sunrise[0].slice(11,16)}</div></div>
+    <div class="stat"><div class="l">Sunset</div><div class="v">${dy.sunset[0].slice(11,16)}</div></div>
+  </div>
+  <div class="panel sec"><h2>Next 24 hours</h2><div class="hourly">${hrs}</div></div>
+  <div class="panel sec"><h2>7-day forecast</h2><ul class="days">${days}</ul></div>`;
+}
+function setUpdated(){
+  stamp=new Date();
+  $('updated').textContent='Updated '+stamp.toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+}
+function fail(){
+  $('main').innerHTML='<div class="panel state">Weather data could not be loaded. Check your internet connection and try again.<br><small>If you opened this inside a preview window, download the file and open it in your browser.</small><br><br><button class="btn" id="retry">Try again</button></div>';
+  $('retry').onclick=init;
+}
+async function select(i){
+  sel=i;renderList();
+  if(!det[i]){$('main').innerHTML='<div class="state"><div class="spin"></div>Loading '+CITIES[i].n+'…</div>';
+    try{await loadDetail(i)}catch(e){return fail()}}
+  if(sel===i)renderMain();
+}
+async function init(refresh){
+  if(!ov.length||refresh)$('main').innerHTML='<div class="state"><div class="spin"></div>Loading weather data…</div>';
+  det={};
+  try{await loadOverview();await loadDetail(sel)}catch(e){return fail()}
+  renderList();renderMain();setUpdated();
+}
+function setUnit(u){
+  unit=u;$('uC').setAttribute('aria-pressed',u==='C');$('uF').setAttribute('aria-pressed',u==='F');
+  if(ov.length){renderList();if(det[sel])renderMain()}
+}
+$('cities').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)select(+b.dataset.i)});
+$('uC').onclick=()=>setUnit('C');$('uF').onclick=()=>setUnit('F');
+$('refresh').onclick=()=>init(true);
+setInterval(()=>init(false),10*60*1000);
+init();
+</script>
+</body>
+</html>
